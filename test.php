@@ -63,6 +63,19 @@ test(
     }
 );
 
+test(
+    'Marks up text as HTML with ellipsis',
+    function () {
+        $text = new TextService();
+
+        $SAMPLE = 'Forsaking monastic tradition, twelve jovial friars gave up their vocation for a questionable existence on the flying trapeze.';
+
+        eq($text->ellipsis($SAMPLE, 40, 1), '<span class="truncated"><span class="truncated-visible">Forsaking monastic tradition, twelve jovial<span class="truncated-ellipsis"></span></span><span class="truncated-invisible"> friars gave up their vocation for a questionable existence on the flying trapeze.</span></span>', 'truncates text to one line');
+        eq($text->ellipsis($SAMPLE, 30, 2), '<span class="truncated"><span class="truncated-visible">Forsaking monastic tradition, twelve jovial friars gave up their<span class="truncated-ellipsis"></span></span><span class="truncated-invisible"> vocation for a questionable existence on the flying trapeze.</span></span>', 'truncates text to two lines');
+        eq($text->ellipsis($SAMPLE, strlen($SAMPLE) + 50, 2), '<span class="truncated"><span class="truncated-visible">Forsaking monastic tradition, twelve jovial friars gave up their vocation for a questionable existence on the flying trapeze.</span></span>', 'does not truncate or add ellipsis if the given text fits in full');
+    }
+);
+
 exit(status());
 
 /**

@@ -32,6 +32,11 @@ class TextService
     const COMPENSATION = 2.27;
 
     /**
+     * @var string character encoding
+     */
+    public $encoding = 'ISO-8859-1';
+
+    /**
      * @var float[] map of average proportional letter widths
      */
     public static $WIDTHS = array(
@@ -248,5 +253,58 @@ class TextService
         }
 
         return $lines;
+    }
+
+    /**
+     * @param  string $text plain text
+     *
+     * @return string HTML escaped text
+     */
+    public function escape($text)
+    {
+        return htmlspecialchars($text, ENT_COMPAT, $this->encoding);
+    }
+
+    /**
+     * Mark up text as truncated, with ellipsis, in a search-engine friendly manner - the
+     * text isn't actually truncated, but marked up so it can appear as truncated when
+     * rendered with CSS; see {@see http://jsfiddle.net/mindplay/1p67r5s9/ this example}.
+     *
+     * The text will be HTML escaped, so the input should be plain text, not HTML - if you
+     * have HTML content, you should {@see http://php.net/strip_tags strip tags} and
+     * {@see http://php.net/manual/en/function.html-entity-decode.php decode entities}
+     * first, so you get the best results if you can provide plain text input.
+     *
+     * @param string $text      plain text
+     * @param int    $width     max. length (in average monospace units)
+     * @param int    $num_lines number of lines before ellipsis (at the specified line length)
+     *
+     * @return string HTML-encoded text marked up with ellipsis
+     */
+    public function ellipsis($text, $width = 75, $num_lines = 1)
+    {
+        $invisible = $this->split($text, $width);
+
+        $visible = array_splice($invisible, 0, min(count($invisible), $num_lines));
+
+        $html = '<span class="truncated">'
+            . '<span class="truncated-visible">'
+            . $this->escape(implode(' ', $visible));
+
+        if (count($invisible)) {
+            $html .= '<span class="truncated-ellipsis"></span>';
+        }
+
+        $html .= '</span>'; # /span.truncated-visible
+
+        if (count($invisible)) {
+            $html .= '<span class="truncated-invisible"> '
+                . $this->escape(implode(' ', $invisible))
+                . '</span>';
+        }
+
+        $html .= '</span>'; # /span.truncated
+
+        return $html;
     }
 }
